@@ -1,0 +1,20 @@
+[project]
+name = "mcp-local-files"
+version = "0.1.0"
+description = "An MCP project for local files."
+requires-python = ">=3.12,<3.13"
+
+dependencies = [
+    "pytest",
+    "pytest-asyncio",
+    "python-dotenv",
+    "ruff",
+    "mcp[cli]",
+    "httpx>=0.28.1",
+    "dspy>=2.5.42",
+    "nest-asyncio>=1.6.0",
+    "click>=8.1.8",
+]
+
+[tool.setuptools]
+packages = ["condamcp"]

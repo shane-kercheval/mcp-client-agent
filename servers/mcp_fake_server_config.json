@@ -1,0 +1,15 @@
+{
+    "mcpServers": {
+      "fake-server": {
+        "command": "uv",
+        "args": [
+          "run",
+          "--directory",
+          "/Users/shanekercheval/repos/mcp-local-files/servers",
+          "mcp",
+          "run",
+          "mcp_fake_server.py"
+        ]
+      }
+    }
+}
