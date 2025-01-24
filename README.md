@@ -25,7 +25,7 @@ The result should be `455 * 381 = 173,355`.
 
 ## Error When Starting Claude
 
-I received these errors when starting Claude after installing the server via `uv run mcp install ./servers/mcp_fake_server.py`. These errors do not happen when using docker containers. One reason for the errors is that I think my `uv` installation is dorked up and installed in `miniconda3` repo rather than the default location. Another issue is that the MCP server cannot find files from different directories that it attempts to import.
+I received these errors when starting Claude after installing the server via `uv run mcp install ./servers/mcp_fake_server.py`. These errors do not happen when using docker containers. One isue is that the `uv` command doesn't seem to be found unless i give it the path via `which uv`. Another issue is that the MCP server cannot find files from different directories that it attempts to import.
 
 Here are the errors I get (`tail -n 20 -F ~/Library/Logs/Claude/mcp*.log` helped me to debug):
 
@@ -40,7 +40,7 @@ The solution was to add the full path to the `command` (to give the full path to
 {
   "mcpServers": {
     "fake-server": {
-      "command": "/Users/shanekercheval/miniconda3/bin/uv",
+      "command": "/Users/shanekercheval/.local/bin/uv",
       "args": [
         "run",
         "--directory", 
