@@ -92,6 +92,8 @@ class Parameter:
         required: Whether the parameter is required.
         description: Description of the parameter.
         enum: List of possible values for the parameter.
+        default: Default value for the parameter.
+        any_of_schema: List of schemas for the parameter, if present.
     """
 
     name: str
@@ -99,6 +101,8 @@ class Parameter:
     required: bool
     description: str | None = None
     enum: list[str] | None = None
+    default: object | None = None
+    any_of_schema: list[dict] | None = None
 
 @dataclass
 class Function:
@@ -115,11 +119,18 @@ class Function:
         required = []
 
         for param in self.parameters:
-            param_dict = {"type": param.type.value}
+            if param.any_of_schema:  # noqa: SIM108
+                # Use the original anyOf schema
+                param_dict = param.any_of_schema
+            else:
+                param_dict = {"type": param.type.value}
+
             if param.description:
                 param_dict["description"] = param.description
             if param.enum:
                 param_dict["enum"] = param.enum
+            if param.default is not None:
+                param_dict["default"] = param.default
 
             properties[param.name] = param_dict
             if param.required:
@@ -151,7 +162,8 @@ class Function:
             ParameterType.BOOLEAN: bool,
             ParameterType.ARRAY: list,
             ParameterType.DICT: dict,
-            # ANY_OF and ENUM might need special handling
+            ParameterType.ANY_OF: str,
+            ParameterType.ENUM: str,
         }
         args = {}
         for param in self.parameters:
@@ -159,8 +171,16 @@ class Function:
             if param.enum:
                 if description:
                     description += "\n"
-                # enum represent allowed values for the parameter; update the description
                 description += f"Allowed values: [{', '.join(param.enum)}]"
+            if param.default is not None:
+                if description:
+                    description += "\n"
+                description += f"Default value: {param.default}"
+            if param.any_of_schema:
+                if description:
+                    description += "\n"
+                description += f"Accepts: {param.any_of_schema}"
+
             args[param.name] = (
                 type_mapping.get(param.type, str),
                 description,
@@ -397,7 +417,7 @@ class FunctionAgent(dspy.ReAct):
         else:
             raise ValueError(f"Unsupported ToolChoiceType: {choice_type}")
 
-        base_instructions += " If there is an error in the tool, either try to resolve the error if it is fixable, or use the 'finish' tool to end the reasoning process and report the error."
+        base_instructions += " If there is an error in the tool, either try to resolve the error if it is fixable, or use the 'finish' tool to end the reasoning process and report the error."  # noqa: E501
         base_signature = dspy.Signature("question -> answer", instructions=base_instructions)
         super().__init__(
             base_signature,
