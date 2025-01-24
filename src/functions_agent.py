@@ -397,6 +397,7 @@ class FunctionAgent(dspy.ReAct):
         else:
             raise ValueError(f"Unsupported ToolChoiceType: {choice_type}")
 
+        base_instructions += " If there is an error in the tool, either try to resolve the error if it is fixable, or use the 'finish' tool to end the reasoning process and report the error."
         base_signature = dspy.Signature("question -> answer", instructions=base_instructions)
         super().__init__(
             base_signature,
