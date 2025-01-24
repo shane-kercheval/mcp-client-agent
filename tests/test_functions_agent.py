@@ -8,7 +8,7 @@ def test_parameter_basic():
         name="test",
         type=ParameterType.STRING,
         required=True,
-        description="A test parameter"
+        description="A test parameter",
     )
     assert param.name == "test"
     assert param.type == ParameterType.STRING
@@ -25,7 +25,7 @@ def test_parameter_with_enum():
         type=ParameterType.STRING,
         required=True,
         description="Sort direction",
-        enum=["asc", "desc"]
+        enum=["asc", "desc"],
     )
     assert param.enum == ["asc", "desc"]
 
@@ -36,7 +36,7 @@ def test_parameter_with_default():
         type=ParameterType.INTEGER,
         required=False,
         description="Maximum items to return",
-        default=10
+        default=10,
     )
     assert param.default == 10
 
@@ -45,9 +45,9 @@ def test_parameter_with_any_of():
     any_of_schema = {
         "anyOf": [
             {"type": "string"},
-            {"type": "null"}
+            {"type": "null"},
         ],
-        "default": None
+        "default": None,
     }
     param = Parameter(
         name="branch",
@@ -55,7 +55,7 @@ def test_parameter_with_any_of():
         required=False,
         description="Branch name",
         any_of_schema=any_of_schema,
-        default=None
+        default=None,
     )
     assert param.any_of_schema == any_of_schema
 
@@ -69,11 +69,11 @@ def test_function_openai_schema_basic():
                 name="arg1",
                 type=ParameterType.STRING,
                 required=True,
-                description="First argument"
-            )
-        ]
+                description="First argument",
+            ),
+        ],
     )
-    
+
     schema = function.to_openai_schema()
     assert schema == {
         "type": "function",
@@ -85,13 +85,13 @@ def test_function_openai_schema_basic():
                 "properties": {
                     "arg1": {
                         "type": "string",
-                        "description": "First argument"
-                    }
+                        "description": "First argument",
+                    },
                 },
                 "required": ["arg1"],
-                "additionalProperties": False
-            }
-        }
+                "additionalProperties": False,
+            },
+        },
     }
 
 def test_function_openai_schema_complex():
@@ -105,14 +105,14 @@ def test_function_openai_schema_complex():
                 type=ParameterType.STRING,
                 required=True,
                 description="Sort direction",
-                enum=["asc", "desc"]
+                enum=["asc", "desc"],
             ),
             Parameter(
                 name="limit",
                 type=ParameterType.INTEGER,
                 required=False,
                 description="Maximum items",
-                default=10
+                default=10,
             ),
             Parameter(
                 name="branch",
@@ -122,14 +122,13 @@ def test_function_openai_schema_complex():
                 any_of_schema={
                     "anyOf": [
                         {"type": "string"},
-                        {"type": "null"}
+                        {"type": "null"},
                     ],
-                    "default": None
-                }
-            )
-        ]
+                    "default": None,
+                },
+            ),
+        ],
     )
-    
     schema = function.to_openai_schema()
     assert schema["function"]["parameters"]["properties"]["sort_order"]["enum"] == ["asc", "desc"]
     assert schema["function"]["parameters"]["properties"]["limit"]["default"] == 10
@@ -145,11 +144,10 @@ def test_function_dspy_tool_basic():
                 name="arg1",
                 type=ParameterType.STRING,
                 required=True,
-                description="First argument"
-            )
-        ]
+                description="First argument",
+            ),
+        ],
     )
-    
     tool = function.to_dspy_tool()
     assert isinstance(tool, Tool)
     assert tool.name == "test_function"
@@ -169,11 +167,10 @@ def test_function_dspy_tool_with_enum():
                 type=ParameterType.STRING,
                 required=True,
                 description="Sort direction",
-                enum=["asc", "desc"]
-            )
-        ]
+                enum=["asc", "desc"],
+            ),
+        ],
     )
-    
     tool = function.to_dspy_tool()
     assert "Allowed values: [asc, desc]" in tool.args["order"][1]
 
@@ -188,11 +185,10 @@ def test_function_dspy_tool_with_default():
                 type=ParameterType.INTEGER,
                 required=False,
                 description="Page size",
-                default=10
-            )
-        ]
+                default=10,
+            ),
+        ],
     )
-    
     tool = function.to_dspy_tool()
     assert "Default value: 10" in tool.args["limit"][1]
 
@@ -208,10 +204,10 @@ def test_function_dspy_tool_type_mapping():
             Parameter(name="bool_arg", type=ParameterType.BOOLEAN, required=True),
             Parameter(name="array_arg", type=ParameterType.ARRAY, required=True),
             Parameter(name="dict_arg", type=ParameterType.DICT, required=True),
-            Parameter(name="any_of_arg", type=ParameterType.ANY_OF, required=True)
-        ]
+            Parameter(name="any_of_arg", type=ParameterType.ANY_OF, required=True),
+        ],
     )
-    
+
     tool = function.to_dspy_tool()
     assert tool.args["str_arg"][0] == str  # noqa: E721
     assert tool.args["int_arg"][0] == int  # noqa: E721

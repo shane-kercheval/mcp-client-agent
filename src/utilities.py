@@ -51,15 +51,15 @@ def colorize_blue(text: str) -> str:
     return f'\033[34m{text}\033[0m'
 
 
-def _convert_schema_to_parameter(name: str, schema: dict[str, object], required: bool) -> Parameter:
+def _convert_schema_to_parameter(name: str, schema: dict[str, object], required: bool) -> Parameter:  # noqa: E501
     """
     Convert a JSON schema parameter definition into a Parameter object.
-    
+
     Examples:
         Basic string parameter:
         >>> schema = {"type": "string", "description": "The user's name"}
         >>> param = _convert_schema_to_parameter("username", schema, required=True)
-        
+
         Integer with default:
         >>> schema = {
         ...     "type": "integer",
@@ -67,7 +67,7 @@ def _convert_schema_to_parameter(name: str, schema: dict[str, object], required:
         ...     "default": 10
         ... }
         >>> param = _convert_schema_to_parameter("max_count", schema, required=False)
-        
+
         Parameter with anyOf (union type):
         >>> schema = {
         ...     "anyOf": [
@@ -78,7 +78,7 @@ def _convert_schema_to_parameter(name: str, schema: dict[str, object], required:
         ...     "title": "Base Branch"
         ... }
         >>> param = _convert_schema_to_parameter("base_branch", schema, required=False)
-        
+
         Enum parameter:
         >>> schema = {
         ...     "type": "string",
@@ -86,7 +86,7 @@ def _convert_schema_to_parameter(name: str, schema: dict[str, object], required:
         ...     "description": "Sort direction"
         ... }
         >>> param = _convert_schema_to_parameter("sort_order", schema, required=True)
-        
+
         Array parameter:
         >>> schema = {
         ...     "type": "array",
@@ -94,12 +94,13 @@ def _convert_schema_to_parameter(name: str, schema: dict[str, object], required:
         ...     "description": "List of file paths"
         ... }
         >>> param = _convert_schema_to_parameter("files", schema, required=True)
-    
+
     Notes:
-        - For `anyOf` schemas, the parameter type is set to ANY_OF and the original schema is preserved
+        - For `anyOf` schemas, the parameter type is set to ANY_OF and the original schema is
+          preserved
         - When no type is specified, defaults to STRING type with a warning
         - Title is used as description if no description is provided
-    
+
     Args:
         name: Name of the parameter
         schema: JSON schema definition for the parameter
@@ -107,7 +108,7 @@ def _convert_schema_to_parameter(name: str, schema: dict[str, object], required:
     """
     default_value = schema.get('default')
     description = schema.get('description') or schema.get('title')
-    
+
     if 'anyOf' in schema:
         if default_value is None:
             # Look for default in anyOf options
@@ -121,9 +122,9 @@ def _convert_schema_to_parameter(name: str, schema: dict[str, object], required:
             required=required,
             description=description,
             default=default_value,
-            any_of_schema=schema
+            any_of_schema=schema,
         )
-    
+
     if 'type' not in schema:
         raise ValueError(f"Missing 'type' in schema for parameter `{name}`: `{schema}`")
 
@@ -143,7 +144,7 @@ def _convert_schema_to_parameter(name: str, schema: dict[str, object], required:
         required=required,
         description=description,
         default=default_value,
-        enum=schema.get('enum')
+        enum=schema.get('enum'),
     )
 
 async def convert_mcp_tools_to_functions(
@@ -194,17 +195,17 @@ async def convert_mcp_tools_to_functions(
     """
     functions = []
     for tool in tools:
-        async def make_wrapper(tool_name: str):
+        async def make_wrapper(tool_name: str):  # noqa: ANN202
             async def wrapper(**kwargs: object) -> str:
                 return await manager.call_tool(tool_name, kwargs)
             return wrapper
-        
+
         schema = tool.get('inputSchema')
         if not schema:
             raise ValueError(f"Missing 'inputSchema' for tool {tool['name']}: {tool}")
         if not isinstance(schema, dict):
             raise ValueError(f"Invalid schema for tool {tool['name']}: {schema}")
-        
+
         properties = schema.get("properties", {})
         required = schema.get("required", [])
 
@@ -212,7 +213,7 @@ async def convert_mcp_tools_to_functions(
             _convert_schema_to_parameter(
                 name=name,
                 schema=prop,
-                required=name in required
+                required=name in required,
             )
             for name, prop in properties.items()
         ]

@@ -154,10 +154,9 @@ def test_convert_schema_to_parameter_basic():
     schema = {
         "type": "string",
         "description": "A test parameter",
-        "title": "Test"
+        "title": "Test",
     }
     param = _convert_schema_to_parameter("test_param", schema, required=True)
-    
     assert isinstance(param, Parameter)
     assert param.name == "test_param"
     assert param.type == ParameterType.STRING
@@ -172,10 +171,9 @@ def test_convert_schema_to_parameter_with_default():
     schema = {
         "type": "integer",
         "title": "Max Count",
-        "default": 10
+        "default": 10,
     }
     param = _convert_schema_to_parameter("max_count", schema, required=False)
-    
     assert param.type == ParameterType.INTEGER
     assert param.default == 10
     assert param.description == "Max Count"
@@ -186,13 +184,12 @@ def test_convert_schema_to_parameter_anyof():
     schema = {
         "anyOf": [
             {"type": "string"},
-            {"type": "null"}
+            {"type": "null"},
         ],
         "default": None,
-        "title": "Base Branch"
+        "title": "Base Branch",
     }
     param = _convert_schema_to_parameter("base_branch", schema, required=False)
-    
     assert param.type == ParameterType.ANY_OF
     assert param.default is None
     assert param.any_of_schema == schema
@@ -204,12 +201,11 @@ def test_convert_schema_to_parameter_anyof_with_nested_default():
     schema = {
         "anyOf": [
             {"type": "string", "default": "main"},
-            {"type": "null"}
+            {"type": "null"},
         ],
-        "title": "Base Branch"
+        "title": "Base Branch",
     }
     param = _convert_schema_to_parameter("base_branch", schema, required=False)
-    
     assert param.type == ParameterType.ANY_OF
     assert param.default == "main"
 
@@ -219,10 +215,9 @@ def test_convert_schema_to_parameter_with_enum():
     schema = {
         "type": "string",
         "enum": ["asc", "desc"],
-        "description": "Sort direction"
+        "description": "Sort direction",
     }
     param = _convert_schema_to_parameter("sort_order", schema, required=True)
-    
     assert param.type == ParameterType.STRING
     assert param.enum == ["asc", "desc"]
     assert param.description == "Sort direction"
@@ -233,10 +228,9 @@ def test_convert_schema_to_parameter_array():
     schema = {
         "type": "array",
         "items": {"type": "string"},
-        "description": "List of file paths"
+        "description": "List of file paths",
     }
     param = _convert_schema_to_parameter("files", schema, required=True)
-    
     assert param.type == ParameterType.ARRAY
     assert param.description == "List of file paths"
 
@@ -246,18 +240,17 @@ def test_convert_schema_to_parameter_complex_object():
     schema = {
         "type": "object",
         "properties": {
-            "nested": {"type": "string"}
+            "nested": {"type": "string"},
         },
-        "description": "A complex object"
+        "description": "A complex object",
     }
     param = _convert_schema_to_parameter("complex", schema, required=True)
-    
     assert param.type == ParameterType.DICT
     assert param.description == "A complex object"
 
 
 @pytest.mark.asyncio
-async def test_convert_mcp_tools_git_create_branch(mock_manager):
+async def test_convert_mcp_tools_git_create_branch(mock_manager: MockMCPManager):
     """Test converting git create branch tool."""
     tools = [{
         "server": "git",
@@ -267,46 +260,46 @@ async def test_convert_mcp_tools_git_create_branch(mock_manager):
             "properties": {
                 "repo_path": {
                     "title": "Repo Path",
-                    "type": "string"
+                    "type": "string",
                 },
                 "branch_name": {
                     "title": "Branch Name",
-                    "type": "string"
+                    "type": "string",
                 },
                 "base_branch": {
                     "anyOf": [
                         {"type": "string"},
-                        {"type": "null"}
+                        {"type": "null"},
                     ],
                     "default": None,
-                    "title": "Base Branch"
-                }
+                    "title": "Base Branch",
+                },
             },
             "required": ["repo_path", "branch_name"],
             "title": "GitCreateBranch",
-            "type": "object"
-        }
+            "type": "object",
+        },
     }]
-    
+
     functions = await convert_mcp_tools_to_functions(tools, mock_manager)
     assert len(functions) == 1
-    
+
     function = functions[0]
     params = {p.name: p for p in function.parameters}
-    
+
     assert params["repo_path"].type == ParameterType.STRING
     assert params["repo_path"].required is True
-    
+
     assert params["branch_name"].type == ParameterType.STRING
     assert params["branch_name"].required is True
-    
+
     assert params["base_branch"].type == ParameterType.ANY_OF
     assert params["base_branch"].required is False
     assert params["base_branch"].default is None
 
 
 @pytest.mark.asyncio
-async def test_convert_mcp_tools_git_log(mock_manager):
+async def test_convert_mcp_tools_git_log(mock_manager: MockMCPManager):
     """Test converting git log tool with default value."""
     tools = [{
         "server": "git",
@@ -316,26 +309,23 @@ async def test_convert_mcp_tools_git_log(mock_manager):
             "properties": {
                 "repo_path": {
                     "title": "Repo Path",
-                    "type": "string"
+                    "type": "string",
                 },
                 "max_count": {
                     "default": 10,
                     "title": "Max Count",
-                    "type": "integer"
-                }
+                    "type": "integer",
+                },
             },
             "required": ["repo_path"],
             "title": "GitLog",
-            "type": "object"
-        }
+            "type": "object",
+        },
     }]
-    
     functions = await convert_mcp_tools_to_functions(tools, mock_manager)
     assert len(functions) == 1
-    
     function = functions[0]
     params = {p.name: p for p in function.parameters}
-    
     assert params["max_count"].type == ParameterType.INTEGER
     assert params["max_count"].required is False
     assert params["max_count"].default == 10

@@ -119,12 +119,12 @@ class Function:
         required = []
 
         for param in self.parameters:
-            if param.any_of_schema:
+            if param.any_of_schema:  # noqa: SIM108
                 # Use the original anyOf schema
                 param_dict = param.any_of_schema
             else:
                 param_dict = {"type": param.type.value}
-                
+
             if param.description:
                 param_dict["description"] = param.description
             if param.enum:
@@ -417,7 +417,7 @@ class FunctionAgent(dspy.ReAct):
         else:
             raise ValueError(f"Unsupported ToolChoiceType: {choice_type}")
 
-        base_instructions += " If there is an error in the tool, either try to resolve the error if it is fixable, or use the 'finish' tool to end the reasoning process and report the error."
+        base_instructions += " If there is an error in the tool, either try to resolve the error if it is fixable, or use the 'finish' tool to end the reasoning process and report the error."  # noqa: E501
         base_signature = dspy.Signature("question -> answer", instructions=base_instructions)
         super().__init__(
             base_signature,
