@@ -41,6 +41,24 @@ import dspy
 
 
 @dataclass
+class TokenUsage:
+    """
+    Tracks token usage and costs for a model call.
+
+    NOTE: DSPy does not seem to have a way to get the cost of prompt/completion tokens, only total.
+    """
+
+    # Token counts
+    input_tokens: int
+    output_tokens: int
+    total_tokens: int
+    # Costs (if available)
+    input_cost: float | None = None
+    output_cost: float | None = None
+    total_cost: float | None = None
+
+
+@dataclass
 class Message:
     """Represents a message in a conversation."""
 
@@ -246,6 +264,7 @@ class FunctionCallResult:
     answer: str
     reasoning: str
     func_calls: list[FunctionCall]
+    token_usage: TokenUsage | None = None
 
 
 class ToolChoiceType(Enum):
@@ -408,6 +427,7 @@ class FunctionAgent(dspy.ReAct):
             max_tokens=model_config.max_tokens,
             cache=False,
         )
+        self._lm = lm
         dspy.configure(lm=lm)
 
         if choice_type == ToolChoiceType.AUTO:
@@ -464,6 +484,7 @@ class FunctionAgent(dspy.ReAct):
         reasoning process, including thoughts, tool calls, and their results. It maintains the same
         core ReAct functionality while providing more visibility into the execution process.
         """
+        start_history_length = len(self._lm.history)
         def _format(trajectory: dict, last_iteration: bool) -> str:  # noqa: ARG001
             adapter = dspy.settings.adapter or dspy.ChatAdapter()
             trajectory_signature = dspy.Signature(f"{', '.join(trajectory.keys())} -> x")
@@ -549,8 +570,16 @@ class FunctionAgent(dspy.ReAct):
                     func_result=error_msg,
                 ))
         extract = self.extract(**input_args, trajectory=_format(trajectory, last_iteration=False))
+        new_history = self._lm.history[start_history_length:]
+        token_usage = TokenUsage(
+            input_tokens=sum(call['usage']['prompt_tokens'] for call in new_history),
+            output_tokens=sum(call['usage']['completion_tokens'] for call in new_history),
+            total_tokens=sum(call['usage']['total_tokens'] for call in new_history),
+            total_cost=sum(call['cost'] for call in new_history if call['cost'] is not None),
+        )
         return FunctionCallResult(
             answer=extract.answer,
             reasoning=extract.reasoning,
             func_calls=tool_predictions,
+            token_usage=token_usage,
         )

@@ -1,6 +1,22 @@
 """Tests for Function and Parameter classes."""
 from dspy import Tool
-from src.functions_agent import Function, Parameter, ParameterType
+from dotenv import load_dotenv
+import os
+import pytest
+from src.functions_agent import (
+    Function,
+    FunctionAgent,
+    FunctionCallResult,
+    ModelConfiguration,
+    Parameter,
+    ParameterType,
+    ToolChoiceType,
+    ToolExecutionResultEvent,
+)
+
+load_dotenv()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
 
 def test_parameter_basic():
     """Test basic Parameter initialization."""
@@ -216,3 +232,106 @@ def test_function_dspy_tool_type_mapping():
     assert tool.args["array_arg"][0] == list  # noqa: E721
     assert tool.args["dict_arg"][0] == dict  # noqa: E721
     assert tool.args["any_of_arg"][0] == str  # noqa: E721
+
+@pytest.fixture
+def mock_calculator_function() -> Function:
+    """Fixture providing a simple calculator function."""
+    def multiply(numbers: list[int]) -> int:
+        """Calculate the multiplication of numbers."""
+        result = 1
+        for num in numbers:
+            result *= num
+        return result
+
+    return Function(
+        name='calculate_multiply',
+        description='Calculates the multiplication of numbers in the list provided',
+        parameters=[
+            Parameter(
+                name='numbers',
+                type=ParameterType.ARRAY,
+                required=True,
+                description='List of numbers to multiply',
+            ),
+        ],
+        func=multiply,
+    )
+
+
+@pytest.fixture
+def model_config() -> ModelConfiguration:
+    """Fixture providing model configuration."""
+    return ModelConfiguration(
+        model='openai/gpt-4o-mini',
+        api_key=OPENAI_API_KEY,
+        temperature=0.0,
+    )
+
+
+@pytest.mark.asyncio
+async def test_agent_single_tool_execution(
+        mock_calculator_function: Function,
+        model_config: ModelConfiguration,
+    ) -> None:
+    """Test agent executing a single tool successfully."""
+    agent = FunctionAgent(
+        model_config=model_config,
+        tools=[mock_calculator_function],
+        max_iters=3,
+        choice_type=ToolChoiceType.REQUIRED,
+    )
+    result = await agent("What is the multiplication of 124, 194, and 315?")
+    assert isinstance(result, FunctionCallResult)
+    assert len(result.func_calls) == 1
+    assert result.answer.replace(',', '') == str(124 * 194 * 315)
+    assert result.reasoning
+    assert result.token_usage.input_tokens > 0
+    assert result.token_usage.output_tokens > 0
+    assert result.token_usage.total_tokens == result.token_usage.input_tokens + result.token_usage.output_tokens  # noqa: E501
+    assert result.token_usage.total_cost > 0
+
+    tool_call = result.func_calls[0]
+    assert tool_call.func_name == 'calculate_multiply'
+    assert tool_call.func_args == {'numbers': [124, 194, 315]}
+    assert tool_call.func_result == 124 * 194 * 315
+
+
+@pytest.mark.asyncio
+async def test_agent_no_tool_execution(
+        mock_calculator_function: Function,
+        model_config: ModelConfiguration,
+    ) -> None:
+    """Test agent handling a query that doesn't require tools."""
+    agent = FunctionAgent(
+        model_config=model_config,
+        tools=[mock_calculator_function],  # incorrect tool
+    )
+
+    result = await agent('What is the capital of France?')
+    assert isinstance(result, FunctionCallResult)
+    assert len(result.func_calls) == 0
+    assert 'Paris' in result.answer
+
+
+@pytest.mark.asyncio
+async def test_agent_event_callback(
+        mock_calculator_function: Function,
+        model_config: ModelConfiguration,
+    ) -> None:
+    """Test agent event callback system."""
+    events = []
+    agent = FunctionAgent(
+        model_config=model_config,
+        tools=[mock_calculator_function],
+        callback=lambda event: events.append(event),
+    )
+    _ = await agent('What is the multiplication of 124, 194, and 315?')
+    assert len(events) > 0
+    tool_execution_result_event = next(
+        (event for event in events if isinstance(event, ToolExecutionResultEvent)),
+        None,
+    )
+    assert tool_execution_result_event
+    assert tool_execution_result_event.tool_name == 'calculate_multiply'
+    assert tool_execution_result_event.tool_args == {'numbers': [124, 194, 315]}
+    assert tool_execution_result_event.result == 124 * 194 * 315
