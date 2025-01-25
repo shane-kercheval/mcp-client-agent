@@ -280,12 +280,15 @@ async def test_agent_single_tool_execution(
         max_iters=3,
         choice_type=ToolChoiceType.REQUIRED,
     )
-
     result = await agent("What is the multiplication of 124, 194, and 315?")
     assert isinstance(result, FunctionCallResult)
     assert len(result.func_calls) == 1
     assert result.answer.replace(',', '') == str(124 * 194 * 315)
     assert result.reasoning
+    assert result.token_usage.input_tokens > 0
+    assert result.token_usage.output_tokens > 0
+    assert result.token_usage.total_tokens == result.token_usage.input_tokens + result.token_usage.output_tokens  # noqa: E501
+    assert result.token_usage.total_cost > 0
 
     tool_call = result.func_calls[0]
     assert tool_call.func_name == 'calculate_multiply'
