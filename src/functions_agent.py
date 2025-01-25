@@ -41,24 +41,6 @@ import dspy
 
 
 @dataclass
-class TokenUsage:
-    """
-    Tracks token usage and costs for a model call.
-
-    NOTE: DSPy does not seem to have a way to get the cost of prompt/completion tokens, only total.
-    """
-
-    # Token counts
-    input_tokens: int
-    output_tokens: int
-    total_tokens: int
-    # Costs (if available)
-    input_cost: float | None = None
-    output_cost: float | None = None
-    total_cost: float | None = None
-
-
-@dataclass
 class Message:
     """Represents a message in a conversation."""
 
@@ -68,6 +50,7 @@ class Message:
     def to_dict(self) -> dict:
         """Convert to a dictionary."""
         return asdict(self)
+
 
 class ParameterType(Enum):
     """
@@ -88,6 +71,7 @@ class ParameterType(Enum):
     ARRAY = "array"
     ENUM = "enum"
     ANY_OF = "anyOf"
+
 
 @dataclass
 class Parameter:
@@ -121,6 +105,7 @@ class Parameter:
     enum: list[str] | None = None
     default: object | None = None
     any_of_schema: list[dict] | None = None
+
 
 @dataclass
 class Function:
@@ -258,6 +243,24 @@ class FunctionCall:
 
 
 @dataclass
+class TokenUsage:
+    """
+    Tracks token usage and costs for a model call.
+
+    NOTE: DSPy does not seem to have a way to get the cost of prompt/completion tokens, only total.
+    """
+
+    # Token counts
+    input_tokens: int
+    output_tokens: int
+    total_tokens: int
+    # Costs (if available)
+    input_cost: float | None = None
+    output_cost: float | None = None
+    total_cost: float | None = None
+
+
+@dataclass
 class FunctionCallResult:
     """Represents the result of a ReAct prediction with tool calls."""
 
@@ -280,6 +283,7 @@ class ToolChoiceType(Enum):
     AUTO = "auto"
     REQUIRED = "required"
 
+
 @dataclass
 class ModelConfiguration:
     """Configuration for the model and tools."""
@@ -296,6 +300,7 @@ class AgentEvent:
     """Base class for all agent events."""
 
     iteration: int
+
 
 @dataclass
 class ThinkStartEvent(AgentEvent):
