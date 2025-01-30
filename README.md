@@ -17,7 +17,7 @@ Useful commands for running the project can be found in the `Makefile`.
         - This MCP server contains trivial tools like `count_characters` or `calulator_multiply`
     - this command uses `openai/gpt-4o-mini` as the model (DSPy model path formatting) and requires `OPENAI_API_KEY` to be set in the `.env` file
 
-Example:
+Example using `make chat` command and `mcp_fake_server.py`:
 
 > Multiply the number of characters in both the following two texts: "Lorem ipsum odor amet, consectetuer adipiscing elit. Nisl ligula molestie nec a sodales morbi vel. Diam interdum metus ante semper, lorem ornare massa. Accumsan dapibus lacus venenatis; elementum varius nascetur nibh sodales ipsum. Suspendisse mauris cubilia sit elit netus mattis. Rhoncus vivamus ridiculus nostra sociosqu bibendum. Eleifend ultricies orci proin maecenas justo felis sagittis. Elit blandit mattis dis consectetur morbi quisque penatibus." and "Lorem ipsum odor amet, consectetuer adipiscing elit. Proin maximus condimentum fusce nam, dictum adipiscing maximus. Lacinia pellentesque magna senectus adipiscing massa cras elementum tortor. Habitant hendrerit sodales, consectetur amet conubia ullamcorper. Suscipit aliquet curae lobortis imperdiet, montes lectus. Hendrerit penatibus commodo semper laoreet viverra eu elit nisl."
 
