@@ -1,6 +1,6 @@
 # MCP-Agent
 
-`./clients/mcp_client.py` is a CLI that uses DSPy to interact with MCP servers. The goal is to provide a similar experience to Claude Desktop. In particular, the DSPy agent uses the tools defined in the MCP server(s) to autonomously and iteratively use the tools to accomplish the user's request.
+`./clients/mcp_client.py` is a CLI that uses DSPy to interact with MCP servers. The goal is to provide a similar experience to Claude Desktop. In particular, the DSPy agent uses the tool definitions defined in the MCP server(s) to autonomously and iteratively use the tools to accomplish the user's request.
 
 The CLI program takes a configuration file in the same format that Claude Desktop uses and loads all of the servers in the config. The tools across all servers are available for the agent to use.
 
@@ -21,7 +21,7 @@ Example:
 
 > Multiply the number of characters in both the following two texts: "Lorem ipsum odor amet, consectetuer adipiscing elit. Nisl ligula molestie nec a sodales morbi vel. Diam interdum metus ante semper, lorem ornare massa. Accumsan dapibus lacus venenatis; elementum varius nascetur nibh sodales ipsum. Suspendisse mauris cubilia sit elit netus mattis. Rhoncus vivamus ridiculus nostra sociosqu bibendum. Eleifend ultricies orci proin maecenas justo felis sagittis. Elit blandit mattis dis consectetur morbi quisque penatibus." and "Lorem ipsum odor amet, consectetuer adipiscing elit. Proin maximus condimentum fusce nam, dictum adipiscing maximus. Lacinia pellentesque magna senectus adipiscing massa cras elementum tortor. Habitant hendrerit sodales, consectetur amet conubia ullamcorper. Suscipit aliquet curae lobortis imperdiet, montes lectus. Hendrerit penatibus commodo semper laoreet viverra eu elit nisl."
 
-The result should be `455 * 381 = 173,355`.
+The `count_characters` and `calculator_multiply` tools should be used and result should be `455 * 381 = 173,355`.
 
 ## Error When Starting Claude
 
