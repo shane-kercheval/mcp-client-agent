@@ -34,6 +34,28 @@ def test_parameter_basic():
     assert param.default is None
     assert param.any_of_schema is None
 
+
+def test_function_openai_no_parameters():
+    """Test Function to OpenAI tool conversion without parameters."""
+    function = Function(
+        name="no_args",
+        description="A function with no arguments",
+    )
+    tool = function.to_openai_schema()
+    assert tool == {
+        "type": "function",
+        "function": {
+            "name": "no_args",
+            "description": "A function with no arguments",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": False,
+            },
+        },
+    }
+
+
 def test_parameter_with_enum():
     """Test Parameter with enum values."""
     param = Parameter(
@@ -45,6 +67,7 @@ def test_parameter_with_enum():
     )
     assert param.enum == ["asc", "desc"]
 
+
 def test_parameter_with_default():
     """Test Parameter with default value."""
     param = Parameter(
@@ -55,6 +78,7 @@ def test_parameter_with_default():
         default=10,
     )
     assert param.default == 10
+
 
 def test_parameter_with_any_of():
     """Test Parameter with anyOf schema."""
@@ -74,6 +98,7 @@ def test_parameter_with_any_of():
         default=None,
     )
     assert param.any_of_schema == any_of_schema
+
 
 def test_function_openai_schema_basic():
     """Test basic Function to OpenAI schema conversion."""
@@ -109,6 +134,7 @@ def test_function_openai_schema_basic():
             },
         },
     }
+
 
 def test_function_openai_schema_complex():
     """Test Function to OpenAI schema with all parameter features."""
@@ -150,6 +176,20 @@ def test_function_openai_schema_complex():
     assert schema["function"]["parameters"]["properties"]["limit"]["default"] == 10
     assert "anyOf" in schema["function"]["parameters"]["properties"]["branch"]
 
+
+def test_function_dspy_no_parameters():
+    """Test Function to DSPy Tool conversion without parameters."""
+    function = Function(
+        name="no_args",
+        description="A function with no arguments",
+    )
+    tool = function.to_dspy_tool()
+    assert isinstance(tool, Tool)
+    assert tool.name == "no_args"
+    assert tool.desc == "A function with no arguments"
+    assert not tool.args
+
+
 def test_function_dspy_tool_basic():
     """Test basic Function to DSPy Tool conversion."""
     function = Function(
@@ -172,6 +212,7 @@ def test_function_dspy_tool_basic():
     assert isinstance(tool.args["arg1"][0], type)  # type
     assert "First argument" in tool.args["arg1"][1]  # description
 
+
 def test_function_dspy_tool_with_enum():
     """Test Function to DSPy Tool conversion with enum values."""
     function = Function(
@@ -190,6 +231,7 @@ def test_function_dspy_tool_with_enum():
     tool = function.to_dspy_tool()
     assert "Allowed values: [asc, desc]" in tool.args["order"][1]
 
+
 def test_function_dspy_tool_with_default():
     """Test Function to DSPy Tool conversion with default values."""
     function = Function(
@@ -207,6 +249,7 @@ def test_function_dspy_tool_with_default():
     )
     tool = function.to_dspy_tool()
     assert "Default value: 10" in tool.args["limit"][1]
+
 
 def test_function_dspy_tool_type_mapping():
     """Test type mapping in DSPy Tool conversion."""
@@ -232,6 +275,7 @@ def test_function_dspy_tool_type_mapping():
     assert tool.args["array_arg"][0] == list  # noqa: E721
     assert tool.args["dict_arg"][0] == dict  # noqa: E721
     assert tool.args["any_of_arg"][0] == str  # noqa: E721
+
 
 @pytest.fixture
 def mock_calculator_function() -> Function:
@@ -311,6 +355,27 @@ async def test_agent_no_tool_execution(
     assert isinstance(result, FunctionCallResult)
     assert len(result.func_calls) == 0
     assert 'Paris' in result.answer
+
+
+@pytest.mark.asyncio
+async def test_agent_tool_without_parameters(model_config: ModelConfiguration) -> None:
+    """Test agent handling a tool without parameters."""
+    def random_number_generator() -> str:
+        return 42
+
+    tool = Function(
+        name='random_number_generator',
+        description="Generates a random number.",
+        func=random_number_generator,
+    )
+    agent = FunctionAgent(
+        model_config=model_config,
+        tools=[tool],
+    )
+    result = await agent('Generate a random number.')
+    assert isinstance(result, FunctionCallResult)
+    assert len(result.func_calls) == 1
+    assert '42' in result.answer
 
 
 @pytest.mark.asyncio

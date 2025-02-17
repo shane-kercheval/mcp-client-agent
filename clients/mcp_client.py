@@ -6,6 +6,7 @@ from pathlib import Path
 import click
 from src.mcp_manager import MCPClientManager
 from src.functions_agent import (
+    Function,
     FunctionAgent,
     ModelConfiguration,
     Message,
@@ -70,6 +71,7 @@ def cli(ctx: click.Context, config: str | None, model: str | None, base_url: str
         'base_url': base_url,
     }
 
+
 async def _chat(ctx: click.Context) -> None:
     """Start an interactive chat session that uses available MCP tools."""
     def print_events(event: AgentEvent) -> None:
@@ -100,6 +102,17 @@ async def _chat(ctx: click.Context) -> None:
 
         functions = await convert_mcp_tools_to_functions(mcp_tools, manager)
         assert len(functions) == len(mcp_tools)
+
+        # Add list_tools as a function so that the user can ask for available tools in the chat
+        async def list_tools() -> list[dict]:
+            return await manager.list_tools()
+
+        list_tools_function = Function(
+            name='list_tools',
+            description='List available tools from all connected MCP servers.',
+            func=list_tools,
+        )
+        functions.append(list_tools_function)
 
         model = ctx.obj['model']
         base_url = ctx.obj['base_url']

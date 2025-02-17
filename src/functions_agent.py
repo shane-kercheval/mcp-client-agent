@@ -112,7 +112,7 @@ class Function:
     """Represents a function that can be called by the model."""
 
     name: str
-    parameters: list[Parameter]
+    parameters: list[Parameter] | None = None
     description: str | None = None
     func: Callable | None = None
 
@@ -121,7 +121,7 @@ class Function:
         properties = {}
         required = []
 
-        for param in self.parameters:
+        for param in self.parameters or []:
             if param.any_of_schema:  # noqa: SIM108
                 # Use the original anyOf schema
                 param_dict = param.any_of_schema
@@ -169,7 +169,7 @@ class Function:
             ParameterType.ENUM: str,
         }
         args = {}
-        for param in self.parameters:
+        for param in self.parameters or []:
             description = param.description or ""
             if param.enum:
                 if description:
@@ -195,7 +195,7 @@ class Function:
             ###################################################################################
             original_tool_init = dspy.Tool.__init__
             def _patched_tool_init(self, func: Callable | None = None, name: str = None, desc: str = None, args: dict[str, object] = None):  # noqa
-                if not name or not desc or not args:
+                if not name or not desc:
                     raise ValueError("When func is None, name, desc, and args must be provided")
                 self.func = None
                 self.name = name
