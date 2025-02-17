@@ -11,6 +11,7 @@ Useful commands for running the project can be found in the `Makefile`.
 ## Quickstart
 
 - create a `.env` file in the project directory and add `OPENAI_API_KEY` key and value.
+- adjust this path `/Users/shanekercheval/repos/mcp-client-agent/servers` in `./servers/mcp_fake_server_config.json` accordingly
 - `make build`
 - `make chat` 
     - starts the `chat` CLI command using the `./servers/mcp_fake_server_config.json` config to start the MCP Server `./servers/mcp_fake_server.py`
@@ -44,7 +45,7 @@ The solution was to add the full path to the `command` and add the `--directory`
       "args": [
         "run",
         "--directory", 
-        "/Users/shanekercheval/repos/mcp-local-files",
+        "/Users/shanekercheval/repos/mcp-client-agent",
         "--with",
         "mcp",
         "mcp",

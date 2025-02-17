@@ -610,7 +610,7 @@ cli = [
 ]
 
 [[package]]
-name = "mcp-local-files"
+name = "mcp-client-agent"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

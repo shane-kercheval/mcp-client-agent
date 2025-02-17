@@ -1,7 +1,7 @@
 [project]
-name = "mcp-local-files"
+name = "mcp-client-agent"
 version = "0.1.0"
-description = "An MCP project for local files."
+description = "An MCP client that uses DSP agent to interact with MCP Server and tools."
 requires-python = ">=3.12,<3.13"
 
 dependencies = [

@@ -5,7 +5,7 @@
         "args": [
           "run",
           "--directory",
-          "/Users/shanekercheval/repos/mcp-local-files/servers",
+          "/Users/shanekercheval/repos/mcp-client-agent/servers",
           "mcp",
           "run",
           "mcp_fake_server.py"
