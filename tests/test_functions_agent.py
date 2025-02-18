@@ -209,8 +209,8 @@ def test_function_dspy_tool_basic():
     assert tool.name == "test_function"
     assert tool.desc == "A test function"
     assert "arg1" in tool.args
-    assert isinstance(tool.args["arg1"][0], type)  # type
-    assert "First argument" in tool.args["arg1"][1]  # description
+    assert tool.args["arg1"]["type"] == "string"
+    assert tool.args["arg1"]["description"] == "First argument"
 
 
 def test_function_dspy_tool_with_enum():
@@ -229,7 +229,8 @@ def test_function_dspy_tool_with_enum():
         ],
     )
     tool = function.to_dspy_tool()
-    assert "Allowed values: [asc, desc]" in tool.args["order"][1]
+    assert "Allowed values: [asc, desc]" in tool.args["order"]["description"]
+    assert tool.args["order"]["enum"] == ["asc", "desc"]
 
 
 def test_function_dspy_tool_with_default():
@@ -248,7 +249,7 @@ def test_function_dspy_tool_with_default():
         ],
     )
     tool = function.to_dspy_tool()
-    assert "Default value: 10" in tool.args["limit"][1]
+    assert "Default value: 10" in tool.args["limit"]["description"]
 
 
 def test_function_dspy_tool_type_mapping():
@@ -268,13 +269,13 @@ def test_function_dspy_tool_type_mapping():
     )
 
     tool = function.to_dspy_tool()
-    assert tool.args["str_arg"][0] == str  # noqa: E721
-    assert tool.args["int_arg"][0] == int  # noqa: E721
-    assert tool.args["float_arg"][0] == float  # noqa: E721
-    assert tool.args["bool_arg"][0] == bool  # noqa: E721
-    assert tool.args["array_arg"][0] == list  # noqa: E721
-    assert tool.args["dict_arg"][0] == dict  # noqa: E721
-    assert tool.args["any_of_arg"][0] == str  # noqa: E721
+    assert tool.args["str_arg"]["type"] == "string"
+    assert tool.args["int_arg"]["type"] == "integer"
+    assert tool.args["float_arg"]["type"] == "number"
+    assert tool.args["bool_arg"]["type"] == "boolean"
+    assert tool.args["array_arg"]["type"] == "array"
+    assert tool.args["dict_arg"]["type"] == "object"
+    assert tool.args["any_of_arg"]["type"] == "anyOf"
 
 
 @pytest.fixture

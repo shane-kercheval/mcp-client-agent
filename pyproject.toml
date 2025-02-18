@@ -9,12 +9,9 @@ dependencies = [
     "pytest-asyncio",
     "python-dotenv",
     "ruff",
-    "mcp[cli]",
-    "httpx>=0.28.1",
-    "dspy>=2.5.42",
     "nest-asyncio>=1.6.0",
     "click>=8.1.8",
+    "mcp[cli]>=1.2.1",
+    "dspy>=2.5.42",
 ]
 
-[tool.setuptools]
-packages = ["condamcp"]

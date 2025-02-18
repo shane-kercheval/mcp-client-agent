@@ -158,16 +158,6 @@ class Function:
 
     def to_dspy_tool(self) -> dspy.Tool:
         """Convert to DSPy Tool."""
-        type_mapping = {
-            ParameterType.STRING: str,
-            ParameterType.NUMBER: float,
-            ParameterType.INTEGER: int,
-            ParameterType.BOOLEAN: bool,
-            ParameterType.ARRAY: list,
-            ParameterType.DICT: dict,
-            ParameterType.ANY_OF: str,
-            ParameterType.ENUM: str,
-        }
         args = {}
         for param in self.parameters or []:
             description = param.description or ""
@@ -184,10 +174,20 @@ class Function:
                     description += "\n"
                 description += f"Accepts: {param.any_of_schema}"
 
-            args[param.name] = (
-                type_mapping.get(param.type, str),
-                description,
-            )
+            schema = {
+                "type": param.type.value,
+                "description": description,
+            }
+            # For arrays, get the item type from the original schema
+            if param.type == ParameterType.ARRAY and param.any_of_schema:
+                schema["items"] = param.any_of_schema.get("items", {"type": "string"})
+            if param.enum:
+                schema["enum"] = param.enum
+            if param.default is not None:
+                schema["default"] = param.default
+
+            args[param.name] = schema
+
         if self.func is None:
             ###################################################################################
             # Monkey-patch the dspy.Tool.__init__ method to allow for creating tools without a
