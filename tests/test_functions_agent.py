@@ -46,6 +46,7 @@ def test_function_openai_no_parameters():
         "type": "function",
         "function": {
             "name": "no_args",
+            "strict": True,
             "description": "A function with no arguments",
             "parameters": {
                 "type": "object",
@@ -120,6 +121,7 @@ def test_function_openai_schema_basic():
         "type": "function",
         "function": {
             "name": "test_function",
+            "strict": True,
             "description": "A test function",
             "parameters": {
                 "type": "object",

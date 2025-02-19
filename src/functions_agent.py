@@ -151,6 +151,7 @@ class Function:
             "type": "function",
             "function": {
                 "name": self.name,
+                "strict": True,
                 **({"description": self.description} if self.description else {}),
                 "parameters": parameters_dict,
             },
