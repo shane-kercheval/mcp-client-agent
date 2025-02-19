@@ -89,8 +89,7 @@ async def _chat(ctx: click.Context) -> None:
             click.echo(colorize_markdown(f"[{event.iteration + 1}] Result from `{event.tool_name}`: =={event.result}=="))  # noqa: E501
 
     message_history: list[Message] = []
-    async with MCPClientManager() as manager:
-        await manager.connect_servers(ctx.obj['config_path'])
+    async with MCPClientManager(config_path=ctx.obj['config_path']) as manager:
         mcp_tools = await manager.list_tools()
 
         if not mcp_tools:
@@ -151,8 +150,7 @@ def chat(ctx: click.Context) -> None:
 
 async def _list_tools(ctx: click.Context) -> None:
     """Async implementation of list_tools command."""
-    async with MCPClientManager() as manager:
-        await manager.connect_servers(ctx.obj['config_path'])
+    async with MCPClientManager(config_path=ctx.obj['config_path']) as manager:
         # list_tools gives tools for all connected servers
         tools = await manager.list_tools()
         for tool in tools:
@@ -170,8 +168,7 @@ def list_tools(ctx: click.Context) -> None:
 
 async def _call_tool(ctx: click.Context, tool: str, args: str) -> None:
     """Async implementation of call_tool command."""
-    async with MCPClientManager() as manager:
-        await manager.connect_servers(ctx.obj['config_path'])
+    async with MCPClientManager(config_path=ctx.obj['config_path']) as manager:
         result = await manager.call_tool(tool, json.loads(args))
         print(result)
 

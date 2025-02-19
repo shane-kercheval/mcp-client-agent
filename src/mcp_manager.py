@@ -38,12 +38,14 @@ class ToolInfo:
 class MCPClientManager:
     """Manages connections to MCP servers."""
 
-    def __init__(self):
+    def __init__(self, config_path: str | Path):
+        self.config_path = config_path
         self.servers: dict[str, ClientSession] = {}
         self.tool_map: dict[str, ToolInfo] = {}
         self.exit_stack = AsyncExitStack()
 
     async def __aenter__(self):
+        await self.connect_servers()
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):  # noqa: ANN001
@@ -84,7 +86,7 @@ class MCPClientManager:
             ))
         return servers
 
-    async def connect_servers(self, config_path: Path) -> None:
+    async def connect_servers(self) -> None:
         """
         Connect to all servers in the config file.
 
@@ -106,7 +108,7 @@ class MCPClientManager:
         }
         ```
         """
-        configs = MCPClientManager.load_config(config_path)
+        configs = MCPClientManager.load_config(self.config_path)
         for config in configs:
             try:
                 await self.connect_server(config)
