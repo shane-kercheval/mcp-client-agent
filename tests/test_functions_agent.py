@@ -121,6 +121,7 @@ def test_function_openai_schema_basic():
         "type": "function",
         "function": {
             "name": "test_function",
+            # strict should be true since all parameters are required
             "strict": True,
             "description": "A test function",
             "parameters": {
@@ -136,6 +137,29 @@ def test_function_openai_schema_basic():
             },
         },
     }
+
+def test_function_openai_schema_not_all_parameters_required_expect_strict_false():
+    """Test Function to OpenAI schema with not all parameters required."""
+    function = Function(
+        name="test_function",
+        description="A test function",
+        parameters=[
+            Parameter(
+                name="arg1",
+                type=ParameterType.STRING,
+                required=True,
+                description="First argument",
+            ),
+            Parameter(
+                name="arg2",
+                type=ParameterType.STRING,
+                required=False,
+                description="Second argument",
+            ),
+        ],
+    )
+    schema = function.to_openai_schema()
+    assert schema["function"]["strict"] is False
 
 
 def test_function_openai_schema_complex():
